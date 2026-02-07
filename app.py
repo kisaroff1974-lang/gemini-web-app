@@ -1,29 +1,30 @@
 import streamlit as st
 import google.generativeai as genai
-import os
 
-# 1. Настройка страницы
-st.set_page_config(page_title="Gemini App", layout="centered")
-st.title("🚀 Моё AI Приложение")
+# Настройка страницы
+st.set_page_config(page_title="My Custom AI App", layout="centered")
 
-# 2. Получение ключа из секретов
+# Подключаем ключ
 api_key = st.secrets["GEMINI_API_KEY"]
+genai.configure(api_key=api_key)
 
-if not api_key:
-    st.error("API ключ не найден!")
-else:
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+# !!! ЗДЕСЬ ПЕРЕНОСИМ ЛОГИКУ ИЗ AI STUDIO !!!
+# Добавь сюда тот текст, который у тебя в поле "System Instructions" в Studio
+system_message = "Твоя системная инструкция из AI Studio здесь"
 
-    # 3. Интерфейс
-    user_input = st.text_area("Введите ваш запрос:", placeholder="Напиши что-нибудь...")
+model = genai.GenerativeModel(
+    model_name='gemini-1.5-flash',
+    system_instruction=system_message # Это заставит модель вести себя как в твоем приложении
+)
 
-    if st.button("Запустить магию ✨"):
-        if user_input:
-            with st.spinner('Думаю...'):
-                try:
-                    response = model.generate_content(user_input)
-                    st.subheader("Ответ Gemini:")
-                    st.write(response.text)
-                except Exception as e:
-                    st.error(f"Ошибка: {e}")
+st.title("Название твоего приложения")
+
+user_input = st.text_input("Введите данные:") # Или text_area для длинного текста
+
+if st.button("Результат"):
+    if user_input:
+        # Можно добавить префикс к запросу, если в Studio были сложные поля
+        full_prompt = f"Обработай этот текст: {user_input}"
+        
+        response = model.generate_content(full_prompt)
+        st.write(response.text)
